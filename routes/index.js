@@ -7,6 +7,8 @@ router.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../views/index.html'));
 });
 
+const verifyToken = 'aS9#mK2$pL5@vN8*qR4&hJ7!wX3^cF6_tY9';
+
 // Webhook verification endpoint (GET)
 router.get('/webhook', (req, res) => {
   const mode = req.query['hub.mode'];
@@ -16,7 +18,7 @@ router.get('/webhook', (req, res) => {
   console.log('Webhook verification attempt:', { mode, token, challenge });
 
   if (mode && token) {
-    if (mode === 'subscribe' && token === process.env.VERIFY_TOKEN) {
+    if (mode === 'subscribe' && token === verifyToken) {
       console.log('Webhook verified successfully');
       res.status(200).send(challenge);
     } else {
