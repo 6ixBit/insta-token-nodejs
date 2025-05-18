@@ -33,25 +33,25 @@ router.get('/webhook', (req, res) => {
 
 // Webhook event handler (POST)
 router.post('/webhook', (req, res) => {
-  // Log the entire request
   console.log('=== Webhook Request Details ===');
   console.log('Headers:', req.headers);
   console.log('Raw Body:', req.body);
-  console.log('Body Type:', typeof req.body);
-  console.log('Body Keys:', Object.keys(req.body));
   console.log('===========================');
 
   if (req.body && typeof req.body === 'object') {
-    if (req.body.object === 'instagram') {
-      console.log('Instagram webhook received');
-      if (req.body.entry) {
-        console.log('Entries:', JSON.stringify(req.body.entry, null, 2));
-      }
+    const { field, value } = req.body;
+    
+    if (field === 'mentions') {
+      console.log('Mention received:', {
+        mediaId: value.media_id,
+        commentId: value.comment_id
+      });
+      
     } else {
-      console.log('Unknown webhook object type:', req.body.object);
+      console.log('Unhandled webhook field:', field);
     }
   } else {
-    console.log('Empty or invalid request body received');
+    console.log('Invalid webhook payload received');
   }
 
   res.status(200).json({
