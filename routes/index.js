@@ -33,25 +33,15 @@ router.get('/webhook', (req, res) => {
 
 // Webhook event handler (POST)
 router.post('/webhook', (req, res) => {
-  console.log('=== Webhook Request Details ===');
-  console.log('Headers:', req.headers);
-  console.log('Raw Body:', req.body);
-  console.log('===========================');
-
-  if (req.body && typeof req.body === 'object') {
-    const { field, value } = req.body;
-    
-    if (field === 'mentions') {
-      console.log('Mention received:', {
-        mediaId: value.media_id,
-        commentId: value.comment_id
-      });
-      
-    } else {
-      console.log('Unhandled webhook field:', field);
-    }
+  const { field, value } = req.body;
+  
+  if (field === 'mentions' && value?.media_id && value?.comment_id) {
+    console.log('Mention received:', {
+      mediaId: value.media_id,
+      commentId: value.comment_id
+    });
   } else {
-    console.log('Invalid webhook payload received');
+    console.log('Unexpected webhook format:', req.body);
   }
 
   res.status(200).json({
