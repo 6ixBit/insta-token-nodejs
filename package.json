@@ -6,7 +6,9 @@
   "author": "alphasec",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.19.2"
+    "body-parser": "~1.20.3",
+    "express": "~4.13.3",
+    "express-x-hub": "^1.0.4"
   },
   "scripts": {
     "start": "node app.js"
