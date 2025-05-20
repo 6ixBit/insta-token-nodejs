@@ -86,9 +86,8 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`Webhook URL: http://your-domain/instagram`);
+  console.log(`Webhook URL: https://insta-token-nodejs-production.up.railway.app/instagram`);
   console.log(`Verify Token: ${VERIFY_TOKEN}`);
 });
-app.listen();
