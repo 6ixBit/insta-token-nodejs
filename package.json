@@ -10,7 +10,11 @@
     "express": "~4.13.3",
     "express-x-hub": "^1.0.4"
   },
+  "engines": {
+    "node": "20.18.0"
+  },
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   }
 }

@@ -1,40 +1,94 @@
-var bodyParser = require('body-parser');
-var express = require('express');
-var app = express();
-var xhub = require('express-x-hub');
+const express = require('express');
+const bodyParser = require('body-parser');
+const xhub = require('express-x-hub');
 
-app.set('port', (process.env.PORT || 3000));
-app.listen(app.get('port'));
+// Initialize express app
+const app = express();
 
-app.use(xhub({ algorithm: 'sha1', secret: process.env.APP_SECRET }));
+// Environment variables
+const PORT = process.env.PORT || 3000;
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'your_verify_token';
+const APP_SECRET = process.env.APP_SECRET || 'your_app_secret';
+
+// Middleware
+app.use(xhub({ algorithm: 'sha1', secret: APP_SECRET }));
 app.use(bodyParser.json());
 
-var token = process.env.TOKEN || 'token';
-var received_updates = [];
+// Store received updates
+const received_updates = [];
 
-app.get('/', function(req, res) {
-  console.log(req);
-  res.send('<pre>' + JSON.stringify(received_updates, null, 2) + '</pre>');
+// Routes
+app.get('/', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Instagram webhook server is running',
+    updates: received_updates
+  });
 });
 
-app.get(['/facebook', '/instagram', '/threads'], function(req, res) {
-  if (
-    req.query['hub.mode'] == 'subscribe' &&
-    req.query['hub.verify_token'] == token
-  ) {
-    res.send(req.query['hub.challenge']);
+// Webhook verification
+app.get('/instagram', (req, res) => {
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+
+  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+    console.log('Webhook verified');
+    res.status(200).send(challenge);
   } else {
-    res.sendStatus(400);
+    console.log('Webhook verification failed');
+    res.sendStatus(403);
   }
 });
 
-app.post('/instagram', function(req, res) {
-  console.log('Instagram request body:');
-  console.log(req.body);
-  // Process the Instagram updates here
+// Webhook notifications
+app.post('/instagram', (req, res) => {
+  // Verify webhook signature
+  if (!req.isXHubValid()) {
+    console.log('Warning - request header X-Hub-Signature not present or invalid');
+    return res.sendStatus(401);
+  }
+
+  // Log the webhook
+  console.log('Instagram webhook received:', {
+    timestamp: new Date().toISOString(),
+    body: req.body
+  });
+
+  // Store the update
   received_updates.unshift(req.body);
-  res.sendStatus(200);
+
+  // Process the webhook data
+  try {
+    const { object, entry } = req.body;
+    
+    if (object === 'instagram' && entry) {
+      entry.forEach(entry => {
+        // Process each entry
+        console.log('Processing entry:', entry.id);
+      });
+    }
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Error processing webhook:', error);
+    res.sendStatus(500);
+  }
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: err.message
+  });
+});
 
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`Webhook URL: http://your-domain/instagram`);
+  console.log(`Verify Token: ${VERIFY_TOKEN}`);
+});
 app.listen();
