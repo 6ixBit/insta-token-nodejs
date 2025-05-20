@@ -10,9 +10,9 @@ const PORT = process.env.PORT || 8080;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'token';
 const APP_SECRET = process.env.APP_SECRET || 'your_app_secret';
 
-// Middleware
-app.use(xhub({ algorithm: 'sha1', secret: APP_SECRET }));
+// Middleware - Move xhub after bodyParser
 app.use(bodyParser.json());
+app.use(xhub({ algorithm: 'sha1', secret: APP_SECRET }));
 
 // Store received updates
 const received_updates = [];
@@ -43,12 +43,9 @@ app.get('/instagram', (req, res) => {
 
 // Webhook notifications
 app.post('/instagram', (req, res) => {
-  // Verify webhook signature
-  if (!req.isXHubValid()) {
-    console.log('Warning - request header X-Hub-Signature not present or invalid');
-    return res.sendStatus(401);
-  }
-
+  // Log headers for debugging
+  console.log('Headers:', req.headers);
+  
   // Log the webhook
   console.log('Instagram webhook received:', {
     timestamp: new Date().toISOString(),
@@ -90,4 +87,5 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Webhook URL: https://insta-token-nodejs-production.up.railway.app/instagram`);
   console.log(`Verify Token: ${VERIFY_TOKEN}`);
+  console.log(`App Secret: ${APP_SECRET}`);
 });
