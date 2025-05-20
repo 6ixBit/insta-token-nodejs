@@ -6,9 +6,7 @@ var xhub = require('express-x-hub');
 app.set('port', (process.env.PORT || 3000));
 app.listen(app.get('port'));
 
-const appSecret = '1234567890';
-
-app.use(xhub({ algorithm: 'sha1', secret: appSecret }));
+app.use(xhub({ algorithm: 'sha1', secret: process.env.APP_SECRET }));
 app.use(bodyParser.json());
 
 var token = process.env.TOKEN || 'token';
