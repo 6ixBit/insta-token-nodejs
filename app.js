@@ -14,12 +14,42 @@ app.use(xhub({ algorithm: 'sha1', secret: APP_SECRET }));
 // Store received updates
 const received_updates = [];
 
+function parseWebhookData(update) {
+  try {
+    const { entry } = update;
+    if (!entry || !entry[0]) return null;
+
+    const { time, changes } = entry[0];
+    if (!changes || !changes[0]) return null;
+
+    const { field, value } = changes[0];
+
+    if (field === 'mentions') {
+      return {
+        type: 'mention',
+        timestamp: new Date(time * 1000).toISOString(),
+        media_id: value.media_id,
+        comment_id: value.comment_id
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error parsing webhook data:', error);
+    return null;
+  }
+}
+
 // Routes
 app.get('/', (req, res) => {
+  // Parse all updates
+  const parsedUpdates = received_updates.map(update => parseWebhookData(update)).filter(Boolean);
+  
   res.json({
     status: 'ok',
     message: 'Instagram webhook server is running',
-    updates: received_updates
+    updates: received_updates,
+    parsed_updates: parsedUpdates
   });
 });
 
@@ -50,16 +80,9 @@ app.post('/instagram', (req, res) => {
 
   // Process the webhook data
   try {
-    const { object, entry } = req.body;
-    
-    if (object === 'instagram' && entry) {
-      entry.forEach(entry => {
-        if (entry.changes) {
-          entry.changes.forEach(change => {
-            console.log(`Instagram ${change.field} update:`, change.value);
-          });
-        }
-      });
+    const parsedData = parseWebhookData(req.body);
+    if (parsedData) {
+      console.log('Parsed webhook data:', parsedData);
     }
 
     res.sendStatus(200);
