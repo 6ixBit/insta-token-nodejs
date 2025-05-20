@@ -61,8 +61,42 @@ app.post('/instagram', (req, res) => {
     
     if (object === 'instagram' && entry) {
       entry.forEach(entry => {
-        // Process each entry
-        console.log('Processing entry:', entry.id);
+        console.log('\n=== Instagram Webhook Entry ===');
+        console.log('Entry ID:', entry.id);
+        
+        // Log changes if they exist
+        if (entry.changes) {
+          console.log('\nChanges:');
+          entry.changes.forEach(change => {
+            console.log('Field:', change.field);
+            console.log('Value:', JSON.stringify(change.value, null, 2));
+          });
+        }
+
+        // Log messaging if it exists
+        if (entry.messaging) {
+          console.log('\nMessaging:');
+          entry.messaging.forEach(message => {
+            console.log('Sender ID:', message.sender.id);
+            console.log('Recipient ID:', message.recipient.id);
+            console.log('Timestamp:', message.timestamp);
+            if (message.message) {
+              console.log('Message:', message.message);
+            }
+          });
+        }
+
+        // Log mentions if they exist
+        if (entry.mentions) {
+          console.log('\nMentions:');
+          entry.mentions.forEach(mention => {
+            console.log('Media ID:', mention.media_id);
+            console.log('Comment ID:', mention.comment_id);
+            console.log('Username:', mention.username);
+          });
+        }
+
+        console.log('===========================\n');
       });
     }
 
