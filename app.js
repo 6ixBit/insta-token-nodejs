@@ -6,7 +6,7 @@ const xhub = require('express-x-hub');
 const app = express();
 
 // Environment variables
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'token';
 const APP_SECRET = process.env.APP_SECRET || 'your_app_secret';
 
